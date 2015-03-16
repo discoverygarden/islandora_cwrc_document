@@ -1,0 +1,91 @@
+<?php
+/**
+ * @file
+ * Defines hooks and required objects for the module.
+ */
+
+define('ISLANDORA_CWRC_DOCUMENT_COLLECTION_PID', 'cwrc:documentCollection');
+define('ISLANDORA_CWRC_DOCUMENT_CONTENT_MODEL', 'cwrc:documentCModel');
+
+/**
+ * Implements hook_islandora_required_objects().
+ */
+function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $connection) {
+  $module_path = drupal_get_path('module', 'islandora_cwrc_document');
+  $islandora_path = drupal_get_path('module', 'islandora');
+  $repository = $connection->repository;
+  $root_pid = variable_get('islandora_repository_pid', 'islandora:root');
+
+  // Collection object.
+  $document_collection = $repository->constructObject(ISLANDORA_CWRC_DOCUMENT_COLLECTION_PID);
+  $document_collection->owner = 'fedoraAdmin';
+  $document_collection->label = 'CWRC Document Collection';
+  $document_collection->models = 'islandora:collectionCModel';
+  $document_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $root_pid);
+  // Collection policy.
+  $cp = $document_collection->constructDatastream('COLLECTION_POLICY', 'X');
+  $cp->label = 'Collection policy';
+  $cp->mimetype = 'application/xml';
+  $cp->setContentFromFile("$module_path/xml/cwrc_document_collection_policy.xml", FALSE);
+  $document_collection->ingestDatastream($cp);
+
+  // Thumbnail.
+  $tn = $document_collection->constructDatastream('TN', 'M');
+  $tn->label = 'Thumbnail';
+  $tn->mimetype = 'image/png';
+  $tn->setcontentFromFile("$islandora_path/images/folder.png", FALSE);
+  $document_collection->ingestDatastream($tn);
+
+  // Document content model.
+  $document_cmodel = $repository->constructObject(ISLANDORA_CWRC_DOCUMENT_CONTENT_MODEL);
+  $document_cmodel->owner = 'fedoraAdmin';
+  $document_cmodel->label = 'CWRC Document Content Model';
+  $document_cmodel->models = 'fedora-system:ContentModel-3.0';
+
+  // DS-COMPOSITE-MODEL.
+  $ds = $document_cmodel->constructDatastream('DS-COMPOSITE-MODEL', 'X');
+  $ds->label = "DS-COMPOSITE-MODEL";
+  $ds->mimetype = 'application/xml';
+  $ds->setContentFromFile("$module_path/xml/cwrc_document_ds_composite_model.xml", FALSE);
+  $document_cmodel->ingestDatastream($ds);
+
+  return array(
+    'islandora_cwrc_document' => array(
+      'title' => 'Islandora CWRC Document',
+      'objects' => array(
+        $document_collection,
+        $document_cmodel,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_ingest_steps().
+ */
+function islandora_cwrc_document_cwrc_documentCModel_islandora_ingest_steps() {
+  return array(
+    'islandora_cwrc_document_upload' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_cwrc_document_upload_form',
+      'module' => 'islandora_cwrc_document',
+      'file' => 'includes/upload.form.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_islandora_edit_datastream_registry().
+ */
+function islandora_cwrc_document_islandora_edit_datastream_registry(AbstractObject $object, AbstractDatastream $ds) {
+  if (in_array('cwrc:documentCModel', $object->models)) {
+    return array(
+      array(
+        'Name' => t('Islandora CWRC Document'),
+        'url' => 'placeholder',
+        'weight' => 5,
+      ),
+    );
+  }
+}
