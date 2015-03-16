@@ -6,6 +6,24 @@
 
 define('ISLANDORA_CWRC_DOCUMENT_COLLECTION_PID', 'cwrc:documentCollection');
 define('ISLANDORA_CWRC_DOCUMENT_CONTENT_MODEL', 'cwrc:documentCModel');
+define('ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC', 'edit CWRC datastreams');
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_cwrc_document_menu() {
+  $items = array();
+  $items['islandora/edit_cwrc/%islandora_object/%islandora_datastream'] = array(
+    'title' => 'CWRC Writer',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_cwrc_document_display_cwrc_writer', 3),
+    'access callback' => 'islandora_datastream_access',
+    'access arguments' => array(ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC, 3),
+    'load arguments' => array(2),
+    'file' => 'includes/utilities.inc',
+  );
+  return $items;
+}
 
 /**
  * Implements hook_islandora_required_objects().
@@ -79,13 +97,25 @@ function islandora_cwrc_document_cwrc_documentCModel_islandora_ingest_steps() {
  * Implements hook_islandora_edit_datastream_registry().
  */
 function islandora_cwrc_document_islandora_edit_datastream_registry(AbstractObject $object, AbstractDatastream $ds) {
-  if (in_array('cwrc:documentCModel', $object->models)) {
+  if (in_array('cwrc:documentCModel', $object->models) && $ds->id == 'CWRC') {
     return array(
       array(
         'Name' => t('Islandora CWRC Document'),
-        'url' => 'placeholder',
+        'url' => "islandora/edit_cwrc/{$object->id}/{$ds->id}",
         'weight' => 5,
       ),
     );
   }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function islandora_cwrc_document_permission() {
+  return array(
+    ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC => array(
+      'title' => t('Edit CWRC documents'),
+      'description' => t('Modify XML within the CWRC-Writer'),
+    ),
+  );
 }

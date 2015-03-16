@@ -9,6 +9,7 @@ Defines required objects needed to house the CWRC Writer's agnostic content.
 This module requires the following modules/libraries:
 
 * [Islandora](https://github.com/islandora/islandora)
+* [Islandora CWRC Writer](https://github.com/discoverygarden/islandora_cwrc_writer)
 
 
 ## Installation
