@@ -100,9 +100,8 @@ function islandora_cwrc_document_islandora_edit_datastream_registry(AbstractObje
   if (in_array('cwrc:documentCModel', $object->models) && $ds->id == 'CWRC') {
     return array(
       array(
-        'Name' => t('Islandora CWRC Document'),
+        'name' => t('Islandora CWRC Document'),
         'url' => "islandora/edit_cwrc/{$object->id}/{$ds->id}",
-        'weight' => 5,
       ),
     );
   }
