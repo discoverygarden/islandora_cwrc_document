@@ -23,9 +23,9 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
       '#title' => t('Document'),
       '#type' => 'managed_file',
       '#required' => TRUE,
-      '#description' => filter_xss(t('Select document to upload.<br/>Files must be less than <b>!size MB.</b><br/>Allowed file types: <b>!ext.</b>', array('!size' => $upload_size, '!ext' => $extensions[0])), array('br', 'b')),
-      '#default_value' => isset($form_state['values']['files']) ? $form_state['values']['files'] : NULL,
-      '#upload_location' => 'temporary://',
+      '#description' => t('Select file to upload.<br/>Files must be less than <strong>@size MB.</strong><br/>Allowed file types: <b>@ext.</b>', array('@size' => $upload_size, '@ext' => $extensions[0])),
+      '#default_value' => isset($form_state['values']['file']) ? $form_state['values']['file'] : NULL,
+      '#upload_location' => file_default_scheme() . '://',
       '#upload_validators' => array(
         'file_validate_extensions' => $extensions,
          // Assume its specified in MB.
