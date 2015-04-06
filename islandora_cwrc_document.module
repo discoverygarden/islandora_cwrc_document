@@ -22,6 +22,13 @@ function islandora_cwrc_document_menu() {
     'load arguments' => array(2),
     'file' => 'includes/utilities.inc',
   );
+  $items['islandora/edit_cwrc/%islandora_object/note.htm'] = array(
+    'title' => 'CWRC Writer Note',
+    'page callback' => 'islandora_cwrc_document_display_cwrc_writer_note',
+    'access callback' => 'islandora_object_access',
+    'access arguments' => array(ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC, 2),
+    'file' => 'includes/utilities.inc',
+  );
   return $items;
 }
 

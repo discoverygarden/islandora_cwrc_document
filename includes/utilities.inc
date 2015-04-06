@@ -26,3 +26,10 @@ function islandora_cwrc_document_display_cwrc_writer(AbstractDatastream $datastr
     ),
   );
 }
+
+/**
+ * Show the note version of the CWRC-Writer.
+ */
+function islandora_cwrc_document_display_cwrc_writer_note() {
+  drupal_goto('cwrc/editor/note.htm');
+}
