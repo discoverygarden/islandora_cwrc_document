@@ -13,10 +13,21 @@ define('ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC', 'edit CWRC datastreams');
  */
 function islandora_cwrc_document_menu() {
   $items = array();
+  $items['islandora/object/%islandora_object/cwrc-writer'] = array(
+    'title' => 'CWRC Writer',
+    'page callback' => 'islandora_cwrc_document_display_cwrc_writer',
+    'page arguments' => array(2),
+    'access callback' => 'islandora_cwrc_document_access_callback',
+    'access arguments' => array(ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC, 2),
+    'load arguments' => array(2),
+    'file' => 'includes/utilities.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 0,
+  );
   $items['islandora/edit_cwrc/%islandora_object/%islandora_datastream'] = array(
     'title' => 'CWRC Writer',
     'page callback' => 'islandora_cwrc_document_display_cwrc_writer',
-    'page arguments' => array(3),
+    'page arguments' => array(2),
     'access callback' => 'islandora_datastream_access',
     'access arguments' => array(ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC, 3),
     'load arguments' => array(2),
@@ -30,6 +41,33 @@ function islandora_cwrc_document_menu() {
     'file' => 'includes/utilities.inc',
   );
   return $items;
+}
+
+/**
+ * Checks whether the user can access the given object's CWRC-Writer tab.
+ *
+ * Checks for object existance, accessiblitly, namespace permissions,
+ * and user permissions
+ *
+ * @param string $op
+ *   The permission to test for.
+ * @param AbstractObject $object
+ *   The object to test, if NULL given the object doesn't exist or is
+ *   inaccessible.
+ *
+ * @return bool
+ *   TRUE if the user is allowed to access this object, FALSE otherwise.
+ */
+function islandora_cwrc_document_access_callback($op, $object = NULL) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  if (!$object && !islandora_describe_repository()) {
+    islandora_display_repository_inaccessible_message();
+    return FALSE;
+  }
+  if (!in_array(ISLANDORA_CWRC_DOCUMENT_CONTENT_MODEL, $object->models)) {
+    return FALSE;
+  }
+  return isset($object['CWRC']) && islandora_datastream_access($op, $object['CWRC']);
 }
 
 /**
@@ -108,7 +146,7 @@ function islandora_cwrc_document_islandora_edit_datastream_registry(AbstractObje
     return array(
       array(
         'name' => t('Islandora CWRC Document'),
-        'url' => "islandora/edit_cwrc/{$object->id}/{$ds->id}",
+        'url' => "islandora/object/{$object->id}/cwrc-writer",
       ),
     );
   }
