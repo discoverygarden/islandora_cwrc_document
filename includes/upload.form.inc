@@ -21,7 +21,7 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
   $extensions = array('xml');
   $schemas = islandora_cwrc_writer_get_schemas();
   $schema_options = array();
-  foreach($schemas as $schema) {
+  foreach ($schemas as $schema) {
     $pid = $schema['pid'];
     $name = $schema['name'];
     $schema_options[$pid] = $name;
@@ -62,9 +62,7 @@ function islandora_cwrc_document_upload_form_validate(array $form, array &$form_
   }
   $schema_pid = $form_state['values']['schema'];
   $data = array(
-    'sch' => url("islandora/object/{$schema_pid}/datastream/SCHEMA/view", array(
-             'absolute' => TRUE,
-           )),
+    'sch' => url("islandora/object/{$schema_pid}/datastream/SCHEMA/view", array('absolute' => TRUE)),
     'type' => 'RNG_XML',
     'content' => file_get_contents($file->uri),
   );
@@ -84,7 +82,7 @@ function islandora_cwrc_document_upload_form_validate(array $form, array &$form_
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
   $result = curl_exec($handle);
   $status = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-  switch($status) {
+  switch ($status) {
     case 200:
       $xml = simplexml_load_string($result);
       $validation_result = (string) $xml->status;
@@ -92,11 +90,10 @@ function islandora_cwrc_document_upload_form_validate(array $form, array &$form_
       if ($validation_result !== 'pass') {
         $errors[] = t('The document is not valid, please uploaded a valid document for the selected schema.');
       }
-      foreach($xml->warning as $warning) {
+      foreach ($xml->warning as $warning) {
         $errors[] = t('Path: %path</br>Message: %message', array(
                      '%path' => (string) $warning->path,
-                     '%message' => (string) $warning->message,
-                   ));
+                     '%message' => (string) $warning->message));
       }
       if (!empty($errors)) {
         form_set_error('file', implode('</br>', $errors));
