@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Utility functions.
+ * Upload a CWRC-Document's Objects CWRC datastream.
  */
 
 /**
