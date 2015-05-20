@@ -24,16 +24,7 @@ function islandora_cwrc_document_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 0,
   );
-  $items['islandora/edit_cwrc/%islandora_object/%islandora_datastream'] = array(
-    'title' => 'CWRC Writer',
-    'page callback' => 'islandora_cwrc_document_display_cwrc_writer',
-    'page arguments' => array(2),
-    'access callback' => 'islandora_datastream_access',
-    'access arguments' => array(ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC, 3),
-    'load arguments' => array(2),
-    'file' => 'includes/utilities.inc',
-  );
-  $items['islandora/edit_cwrc/%islandora_object/note.htm'] = array(
+  $items['islandora/object/%islandora_object/note.htm'] = array(
     'title' => 'CWRC Writer Note',
     'page callback' => 'islandora_cwrc_document_display_cwrc_writer_note',
     'access callback' => 'islandora_object_access',
