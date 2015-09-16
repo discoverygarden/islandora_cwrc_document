@@ -54,58 +54,19 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
  * Checks that the given document is validate according to the given schema.
  */
 function islandora_cwrc_document_upload_form_validate(array $form, array &$form_state) {
-  global $user;
   $file = file_load($form_state['values']['file']);
   // The #required field will handle the validation in this case.
   if ($file === FALSE) {
     return;
   }
-  $schema_pid = $form_state['values']['schema'];
-  $data = array(
-    'sch' => url("islandora/object/{$schema_pid}/datastream/SCHEMA/view", array('absolute' => TRUE)),
-    'type' => 'RNG_XML',
-    'content' => file_get_contents($file->uri),
-  );
-  $data_string = drupal_json_encode($data);
-  $handle = curl_init();
-  curl_setopt($handle, CURLOPT_URL, url('cwrc/services/validator/validate.html', array(
-        'absolute' => TRUE,
-      )));
-  curl_setopt($handle, CURLOPT_HTTPHEADER, array(
-      'Accept: application/xml, text/xml, */*',
-      'Content-Type: application/x-www-form-urlencoded',
-    ));
-  curl_setopt($handle, CURLOPT_USERPWD, "{$user->name}:{$user->pass}");
-  curl_setopt($handle, CURLOPT_POST, TRUE);
-  curl_setopt($handle, CURLOPT_POSTFIELDS, http_build_query($data));
-  curl_setopt($handle, CURLOPT_FOLLOWLOCATION, TRUE);
-  curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
-  $result = curl_exec($handle);
-  $status = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-  switch ($status) {
-    case 200:
-      $xml = simplexml_load_string($result);
-      $validation_result = (string) $xml->status;
-      $errors = array();
-      if ($validation_result !== 'pass') {
-        $errors[] = t('The document is not valid, please uploaded a valid document for the selected schema.');
-      }
-      foreach ($xml->warning as $warning) {
-        $errors[] = t('Path: %path</br>Message: %message', array(
-                     '%path' => (string) $warning->path,
-                     '%message' => (string) $warning->message));
-      }
-      if (!empty($errors)) {
-        form_set_error('file', implode('</br>', $errors));
-      }
-      break;
 
-    default:
-      form_set_error('file', t('Failed to validate uploaded document: Status Code: %status.', array(
-            '%status' => $status)));
-      break;
+  // Check that the uploaded file is well-formed XML.
+  libxml_use_internal_errors(TRUE);
+  simplexml_load_file(drupal_realpath($file->uri));
+  if (count(libxml_get_errors())) {
+    form_set_error('file', t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
   }
-  curl_close($handle);
+  libxml_use_internal_errors(FALSE);
 }
 
 /**
