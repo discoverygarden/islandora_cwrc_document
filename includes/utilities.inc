@@ -39,7 +39,7 @@ function islandora_cwrc_document_display_cwrc_writer_note() {
 /**
  * Check that a file is well-formed xml.
  *
- * @param $file
+ * @param file $file
  *   A file object.
  *
  * @return bool
