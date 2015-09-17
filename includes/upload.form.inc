@@ -60,13 +60,10 @@ function islandora_cwrc_document_upload_form_validate(array $form, array &$form_
     return;
   }
 
-  // Check that the uploaded file is well-formed XML.
-  libxml_use_internal_errors(TRUE);
-  simplexml_load_file(drupal_realpath($file->uri));
-  if (count(libxml_get_errors())) {
+  module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
+  if (!islandora_cwrc_document_check_xml($file)) {
     form_set_error('file', t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
   }
-  libxml_use_internal_errors(FALSE);
 }
 
 /**
