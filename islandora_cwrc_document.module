@@ -191,3 +191,30 @@ function islandora_cwrc_document_permission() {
     ),
   );
 }
+
+/**
+ * Implements hook_form_alter().
+ */
+function islandora_cwrc_document_form_islandora_datastream_version_replace_form_alter(&$form, &$form_state, $form_id) {
+  // On Datastream replace for CWRC datastream modify valid file extensions and
+  // add a validation function to check that the uploaded xml file is
+  // well-formed.
+  if ($form_state['dsid'] == 'CWRC') {
+    $form['dsid_fieldset']['file']['#upload_validators']['file_validate_extensions'] = array('xml');
+    $form['#validate'][] = 'islandora_cwrc_document_xml_validate';
+  }
+}
+
+/**
+ * Custom form validation for CWRC datastream replace to uploaded xml.
+ */
+function islandora_cwrc_document_xml_validate($form, &$form_state) {
+  module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
+  $file = file_load($form_state['values']['file']);
+  if ($file === FALSE) {
+    return;
+  }
+  if (!islandora_cwrc_document_check_xml($file)) {
+    form_set_error('dsid_fieldset][file', t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
+  }
+}
