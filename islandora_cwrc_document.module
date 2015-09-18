@@ -35,6 +35,43 @@ function islandora_cwrc_document_menu() {
 }
 
 /**
+ * Implements hook_menu_alter().
+ */
+function islandora_cwrc_document_menu_alter(&$items) {
+  $path = drupal_get_path('module', 'islandora_cwrc_document');
+  $items['islandora/object/%islandora_object/datastream/%islandora_datastream/view'] = array(
+    'title' => 'View datastream',
+    'page callback' => 'islandora_cwrc_document_view_datastream',
+    'page arguments' => array(4, FALSE, NULL),
+    'type' => MENU_CALLBACK,
+    'file' => "$path/includes/utilities.inc",
+    'access callback' => 'islandora_datastream_access',
+    'access arguments' => array(ISLANDORA_VIEW_OBJECTS, 4),
+    'load arguments' => array(2),
+  );
+  $items['islandora/object/%islandora_object/datastream/%islandora_datastream/version/%/view'] = array(
+    'title' => 'View datastream version',
+    'page callback' => 'islandora_cwrc_document_view_datastream',
+    'page arguments' => array(4, FALSE, 6),
+    'type' => MENU_CALLBACK,
+    'file' => "$path/includes/utilities.inc",
+    'access callback' => 'islandora_datastream_access',
+    'access arguments' => array(ISLANDORA_VIEW_DATASTREAM_HISTORY, 4),
+    'load_arguments' => array(2),
+  );
+  $items['islandora/object/%islandora_object/datastream/%islandora_datastream/download'] = array(
+    'title' => 'Download datastream',
+    'page callback' => 'islandora_cwrc_document_download_datastream',
+    'page arguments' => array(4),
+    'type' => MENU_CALLBACK,
+    'file' => "$path/includes/utilities.inc",
+    'access callback' => 'islandora_datastream_access',
+    'access arguments' => array(ISLANDORA_VIEW_OBJECTS, 4),
+    'load arguemnts' => array(2),
+  );
+}
+
+/**
  * Checks whether the user can access the given object's CWRC-Writer tab.
  *
  * Checks for object existance, accessiblitly, namespace permissions,
