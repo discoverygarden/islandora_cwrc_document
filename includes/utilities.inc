@@ -39,7 +39,7 @@ function islandora_cwrc_document_display_cwrc_writer_note() {
 /**
  * Wrapper for islandora_download_datastream() that modifies CWRC datastreams.
  *
- * @see islandora_download_datastream().
+ * @see islandora_download_datastream()
  */
 function islandora_cwrc_document_download_datastream(AbstractDatastream $datastream) {
   islandora_cwrc_document_view_datastream($datastream, TRUE);
@@ -48,64 +48,84 @@ function islandora_cwrc_document_download_datastream(AbstractDatastream $datastr
 /**
  * Wrapper for islandora_view_datastream() that modifies CWRC datastreams.
  *
- * @see islandora_view_datastream().
+ * @see islandora_view_datastream()
  */
 function islandora_cwrc_document_view_datastream(AbstractDatastream $datastream, $download = FALSE, $version = NULL) {
   $object = $datastream->parent;
   module_load_include('inc', 'islandora', 'includes/datastream');
+
   if ($datastream->id == 'CWRC' && in_array('cwrc:documentCModel', $object->models)) {
-    $accessibles = islandora_cwrc_document_get_rng_css_accessibility($object);
-    if ($accessibles) {
-      // Get and possibly modify the original content.
-      if ($datastream->controlGroup == 'X' || 'M') {
-        global $base_url;
-        $cwrc = $datastream->content;
-        module_load_include('inc', 'islandora_cwrc_writer', 'includes/utilities');
+    // Get the schema object. If there's a problem, bail.
+    $schema_pid = $object->relationships->get('http://cwrc.ca/ns/cw#', 'hasSchema');
+    if ($schema_pid) {
+      $operation = $download ? 'download' : 'view';
+      $schema_object = islandora_object_load($schema_pid[0]['object']['value']);
+      if (!$schema_object) {
+        watchdog('islandora_cwrc_writer',
+          'The hasSchema relationship on !object pointed to an object (!schema_object) that could not be loaded when attempting to !operation it; deferring to the unmodified datastream.',
+          array(
+            '!object' => $object->id,
+            '!schema_object' => $schema_object->id,
+            '!operation' => $operation,
+          ),
+          WATCHDOG_WARNING
+        );
+        islandora_view_datastream($datastream, $download, $version);
+      }
 
-        // Attempt to add the two datastreams.
-        foreach ($accessibles as $accessible) {
-          $url = $object[$accessible]->controlGroup == 'X' || 'M' ?
-            "$base_url/islandora/object/{$object->id}/datastream/$accessible/view" :
-            $object[$accessible]->url;
-          if ($accessible == 'SCHEMA') {
-            $cwrc = islandora_cwrc_writer_add_model_processing_instruction_to_string($cwrc, $url);
+      $accessibles = islandora_cwrc_document_get_rng_css_accessibility($schema_object);
+      if ($accessibles) {
+        // Get and possibly modify the original content.
+        if ($datastream->controlGroup == 'X' || 'M') {
+          global $base_url;
+          $cwrc = $datastream->content;
+          module_load_include('inc', 'islandora_cwrc_writer', 'includes/utilities');
+
+          // Attempt to add the two datastreams.
+          foreach ($accessibles as $accessible) {
+            $url = $schema_object[$accessible]->controlGroup == 'X' || 'M' ?
+              "$base_url/islandora/object/{$schema_object->id}/datastream/$accessible/view" :
+              $schema_object[$accessible]->url;
+            if ($accessible == 'SCHEMA') {
+              $cwrc = islandora_cwrc_writer_add_model_processing_instruction_to_string($cwrc, $url);
+            }
+            else {
+              $cwrc = islandora_cwrc_writer_add_stylesheet_processing_instruction_to_string($cwrc, $url, 'text/css');
+            }
+            // If something goes wrong, bail and defer to the original.
+            if (!$cwrc) {
+              watchdog('islandora_cwrc_writer',
+                'The !accessible datastream on !pid could not be added to the CWRC datastream when attempting to !operation it as it created malformed XML; deferring to the unmodified datastream.',
+                array(
+                  '!accessible' => $accessible,
+                  '!pid' => $schema_object->id,
+                  '!operation' => $operation,
+                ),
+                WATCHDOG_WARNING
+              );
+              islandora_view_datastream($datastream, $download, $version);
+            }
           }
-          else {
-            $cwrc = islandora_cwrc_writer_add_stylesheet_processing_instruction_to_string($cwrc, $url, 'text/css');
-          }
-          // If something goes wrong, bail and defer to the original.
-          if (!$cwrc) {
-            $operation = $download ? 'download' : 'view';
-            watchdog('islandora_cwrc_writer',
-              'The !accessible datastream on !pid could not be added to the CWRC datastream when attempting to !operation it, as it created malformed XML; deferring to the unmodified datastream.',
-              array(
-                '!accessible' => $accessible,
-                '!pid' => $object->id,
-                '!operation' => $operation,
-              ),
-              WATCHDOG_WARNING
-            );
-            islandora_view_datastream($datastream, $download, $version);
-          }
+          $modified = file_unmanaged_save_data($cwrc, 'temporary://');
+
+          // Construct a dummy datastream. This won't be ingested, but is rather
+          // just passed on to islandora_view_datastream() in lieu of the regular
+          // one so we can reuse that code.
+          $download_version = $object->constructDatastream('CWRC_DOWNLOADABLE');
+          $download_version->label = $datastream->label;
+          $download_version->state = $datastream->state;
+          $download_version->mimetype = $datastream->mimetype;
+          $download_version->createdDate = $datastream->createdDate;
+          $download_version->setContentFromFile($modified);
+          // No size data exists until the datastream is ingested, so set it now.
+          $download_version->size = filesize($modified);
+          unlink($modified);
+          islandora_view_datastream($download_version, $download, $version);
         }
-        $modified = file_unmanaged_save_data($cwrc, 'temporary://');
-
-        // Construct a dummy datastream. This won't be ingested, but is rather
-        // just passed on to islandora_view_datastream() in lieu of the regular
-        // one so we can reuse that code.
-        $download_version = $object->constructDatastream('CWRC_DOWNLOADABLE');
-        $download_version->label = $datastream->label;
-        $download_version->state = $datastream->state;
-        $download_version->mimetype = $datastream->mimetype;
-        $download_version->createdDate = $datastream->createdDate;
-        $download_version->setContentFromFile($modified);
-        // No size data exists until the datastream is ingested, so set it now.
-        $download_version->size = filesize($modified);
-        unlink($modified);
-        islandora_view_datastream($download_version, $download, $version);
       }
     }
   }
+  
   // Default in all other cases.
   islandora_view_datastream($datastream, $download, $version);
 }
@@ -128,6 +148,7 @@ function islandora_cwrc_document_get_rng_css_accessibility($object) {
     }
   }
   return $results;
+}
 
 /**
  * Check that a file is well-formed xml.
