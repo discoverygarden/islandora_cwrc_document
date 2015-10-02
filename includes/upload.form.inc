@@ -37,7 +37,7 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
     '#title' => t('TEI Source Type'),
     '#description' => t('Select whether the TEI will be uploaded from a file or selected from predefined templates.'),
     '#type' => 'radios',
-    '#required' => TRUE,
+    '#default_value' => isset($form_state['values']['source']) ? $form_state['values']['source'] : 'file',
     '#options' => array(
       'file' => t('File Upload'),
       'template' => t('Template'),
@@ -61,6 +61,9 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
     ),
   );
   $definition['file'] = islandora_cwrc_document_get_file_upload_element($form_state);
+  // There's a weird issue in Drupal (https://www.drupal.org/node/1592688) where
+  // #states can cause things to be required twice. Still functional; just needs
+  // that patch to make it look proper.
   $definition['file']['#states'] = array(
     'visible' => array(
       ':input[name="source"]' => array('value' => 'file'),
@@ -73,18 +76,20 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
 }
 
 /**
- * Checks that the given document is validate according to the given schema.
+ * Checks that the given document is valid according to the given schema.
  */
 function islandora_cwrc_document_upload_form_validate(array $form, array &$form_state) {
-  $file = file_load($form_state['values']['file']);
-  // The #required field will handle the validation in this case.
-  if ($file === FALSE) {
-    return;
-  }
-
-  module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
-  if (!islandora_cwrc_document_check_xml($file)) {
-    form_set_error('file', t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
+  if ($form_state['values']['source'] == 'file') {
+    // Is there a file?
+    $file = file_load($form_state['values']['file']);
+    if ($file === FALSE) {
+      form_set_error('file', t('Please upload a file.'));
+    }
+    // Is it well-formed XML?
+    module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
+    if (!islandora_cwrc_document_check_xml($file)) {
+      form_set_error('file', t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
+    }
   }
 }
 
