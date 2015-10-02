@@ -170,3 +170,100 @@ function islandora_cwrc_document_check_xml($file) {
   }
   return TRUE;
 }
+
+/**
+ * Gets an array of stock templates from the xml/templates folder.
+ *
+ * @return array
+ *   An array containing multiple stock template profiles, using the form:
+ *   - 'pid' for the destination PID of the template,
+ *   - 'label' for the template label, and
+ *   - 'filename' for the name of the template XML file.
+ */
+function islandora_cwrc_document_get_stock_templates() {
+  return array(
+    array(
+      'pid' => 'cwrc:biographyTemplate',
+      'label' => 'Biography (Template)',
+      'filename' => "biography.xml",
+    ),
+    array(
+      'pid' => 'cwrc:blankTEIDocument',
+      'label' => 'Blank TEI Document',
+      'filename' => "blank_TEI_document.xml",
+    ),
+    array(
+      'pid' => 'cwrc:eventTemplate',
+      'label' => 'Event',
+      'filename' => "event.xml",
+    ),
+    array(
+      'pid' => 'cwrc:letterTemplate',
+      'label' => 'Letter (Template)',
+      'filename' => "letter.xml",
+    ),
+    array(
+      'pid' => 'cwrc:poemTemplate',
+      'label' => 'Poem (Template)',
+      'filename' => "poem.xml",
+    ),
+    array(
+      'pid' => 'cwrc:proseTemplate',
+      'label' => 'Prose',
+      'filename' => "prose.xml",
+    ),
+    array(
+      'pid' => 'cwrc:sampleBiography',
+      'label' => 'Biography (Sample)',
+      'filename' => 'sample_biography.xml',
+    ),
+    array(
+      'pid' => 'cwrc:sampleLetter',
+      'label' => 'Letter (Sample)',
+      'filename' => 'sample_letter.xml',
+    ),
+    array(
+      'pid' => 'cwrc:samplePoem',
+      'label' => 'Poem (Sample)',
+      'filename' => 'sample_poem.xml',
+    ),
+    array(
+      'pid' => 'cwrc:sampleWriting',
+      'label' => 'Writing (Sample)',
+      'filename' => 'sample_writing.xml',
+    ),
+    array(
+      'pid' => 'cwrc:writingTemplate',
+      'label' => 'Writing (Template)',
+      'filename' => 'writing.xml',
+    ),
+  );
+}
+
+/**
+ * Gets template objects with TEMPLATE datastreams as select form options.
+ *
+ * @return array
+ *   An associative array pairing template PIDs with their labels.
+ */
+function islandora_cwrc_document_get_templates() {
+  $content_model = ISLANDORA_CWRC_DOCUMENT_TEMPLATE_CONTENT_MODEL;
+  $query = <<<EOQ
+SELECT ?pid ?label
+FROM <#ri>
+WHERE {
+  ?pid <fedora-model:hasModel> <info:fedora/$content_model> .
+  ?pid <fedora-model:label> ?label .
+  ?ds  <fedora-view:disseminationType> <info:fedora/*/TEMPLATE> .
+  ?pid <info:fedora/fedora-system:def/view#disseminates> ?ds
+}
+EOQ;
+  $connection = islandora_get_tuque_connection();
+  $results = $connection->repository->ri->sparqlQuery($query);
+  $templates = array();
+  foreach ($results as $result) {
+    $templates[$result['pid']['value']] = $result['label']['value'];
+  }
+  asort($templates);
+  return $templates;
+}

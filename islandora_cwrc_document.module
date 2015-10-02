@@ -5,7 +5,9 @@
  */
 
 define('ISLANDORA_CWRC_DOCUMENT_COLLECTION_PID', 'cwrc:documentCollection');
+define('ISLANDORA_CWRC_DOCUMENT_TEMPLATE_COLLECTION_PID', 'cwrc:documentTemplateCollection');
 define('ISLANDORA_CWRC_DOCUMENT_CONTENT_MODEL', 'cwrc:documentCModel');
+define('ISLANDORA_CWRC_DOCUMENT_TEMPLATE_CONTENT_MODEL', 'cwrc:documentTemplateCModel');
 define('ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC', 'edit CWRC datastreams');
 
 /**
@@ -106,6 +108,7 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
   $islandora_path = drupal_get_path('module', 'islandora');
   $repository = $connection->repository;
   $root_pid = variable_get('islandora_repository_pid', 'islandora:root');
+  module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
 
   // Collection object.
   $document_collection = $repository->constructObject(ISLANDORA_CWRC_DOCUMENT_COLLECTION_PID);
@@ -119,7 +122,6 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
   $cp->mimetype = 'application/xml';
   $cp->setContentFromFile("$module_path/xml/cwrc_document_collection_policy.xml", FALSE);
   $document_collection->ingestDatastream($cp);
-
   // Thumbnail.
   $tn = $document_collection->constructDatastream('TN', 'M');
   $tn->label = 'Thumbnail';
@@ -132,7 +134,6 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
   $document_cmodel->owner = 'fedoraAdmin';
   $document_cmodel->label = 'CWRC Document Content Model';
   $document_cmodel->models = 'fedora-system:ContentModel-3.0';
-
   // DS-COMPOSITE-MODEL.
   $ds = $document_cmodel->constructDatastream('DS-COMPOSITE-MODEL', 'X');
   $ds->label = "DS-COMPOSITE-MODEL";
@@ -140,15 +141,66 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
   $ds->setContentFromFile("$module_path/xml/cwrc_document_ds_composite_model.xml", FALSE);
   $document_cmodel->ingestDatastream($ds);
 
-  return array(
+  // Template collection object.
+  $template_collection = $repository->constructObject(ISLANDORA_CWRC_DOCUMENT_TEMPLATE_COLLECTION_PID);
+  $template_collection->owner = 'fedoraAdmin';
+  $template_collection->label = 'CWRC Document Template Collection';
+  $template_collection->models = 'islandora:collectionCModel';
+  $template_collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $root_pid);
+  // Template collection policy.
+  $cp = $template_collection->constructDatastream('COLLECTION_POLICY', 'X');
+  $cp->label = 'Collection policy';
+  $cp->mimetype = 'application/xml';
+  $cp->setContentFromFile("$module_path/xml/cwrc_document_template_collection_policy.xml", FALSE);
+  $template_collection->ingestDatastream($cp);
+  // Thumbnail.
+  $tn = $template_collection->constructDatastream('TN', 'M');
+  $tn->label = 'Thumbnail';
+  $tn->mimetype = 'image/png';
+  $tn->setContentFromFile("$islandora_path/images/folder.png", FALSE);
+  $template_collection->ingestDatastream($tn);
+
+  // Document template content model.
+  $template_cmodel = $repository->constructObject(ISLANDORA_CWRC_DOCUMENT_TEMPLATE_CONTENT_MODEL);
+  $template_cmodel->owner = 'fedoraAdmin';
+  $template_cmodel->label = 'CWRC Document Template Content Model';
+  $template_cmodel->models = 'fedora-system:ContentModel-3.0';
+  //DS-COMPOSITE-MODEL
+  $ds = $template_cmodel->constructDatastream('DS-COMPOSITE-MODEL', 'X');
+  $ds->label = 'DS-COMPOSITE-MODEL';
+  $ds->mimetype = 'application/xml';
+  $ds->setContentFromFile("$module_path/xml/cwrc_document_template_ds_composite_model.xml", FALSE);
+  $template_cmodel->ingestDatastream($ds);
+
+  $objects = array(
     'islandora_cwrc_document' => array(
       'title' => 'Islandora CWRC Document',
       'objects' => array(
         $document_collection,
         $document_cmodel,
+        $template_collection,
+        $template_cmodel,
       ),
     ),
   );
+
+  // Standard templates.
+  foreach (islandora_cwrc_document_get_stock_templates() as $stock_template) {
+    // Template object.
+    $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]= $repository->constructObject($stock_template['pid']);
+    $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->owner = 'fedoraAdmin';
+    $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->label = $stock_template['label'];
+    $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->models = ISLANDORA_CWRC_DOCUMENT_TEMPLATE_CONTENT_MODEL;
+    $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', ISLANDORA_CWRC_DOCUMENT_TEMPLATE_COLLECTION_PID);
+    // TEMPLATE datastream.
+    $td = $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->constructDatastream('TEMPLATE', 'M');
+    $td->label = "{$stock_template['label']} TEI";
+    $td->mimetype = 'application/xml';
+    $td->setContentFromFile("$module_path/xml/templates/{$stock_template['filename']}", FALSE);
+    $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->ingestDatastream($td);
+  }
+  
+  return $objects;
 }
 
 /**
@@ -160,6 +212,21 @@ function islandora_cwrc_document_cwrc_documentCModel_islandora_ingest_steps() {
       'weight' => 10,
       'type' => 'form',
       'form_id' => 'islandora_cwrc_document_upload_form',
+      'module' => 'islandora_cwrc_document',
+      'file' => 'includes/upload.form.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_ingest_steps().
+ */
+function islandora_cwrc_document_cwrc_documentTemplateCModel_islandora_ingest_steps() {
+  return array(
+    'islandora_cwrc_document_template_upload' => array(
+      'weight' => 10,
+      'type' => 'form',
+      'form_id' => 'islandora_cwrc_document_template_upload_form',
       'module' => 'islandora_cwrc_document',
       'file' => 'includes/upload.form.inc',
     ),
@@ -217,4 +284,11 @@ function islandora_cwrc_document_xml_validate($form, &$form_state) {
   if (!islandora_cwrc_document_check_xml($file)) {
     form_set_error('dsid_fieldset][file', t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
   }
+}
+
+/**
+ * Implements hook_preprocess_islandora_cwrc_writer().
+ */
+function islandora_cwrc_document_preprocess_islandora_cwrc_writer(&$variables) {
+  $variables['settings']['buttons1'] = 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,savebutton';
 }
