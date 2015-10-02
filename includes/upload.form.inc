@@ -85,10 +85,12 @@ function islandora_cwrc_document_upload_form_validate(array $form, array &$form_
     if ($file === FALSE) {
       form_set_error('file', t('Please upload a file.'));
     }
-    // Is it well-formed XML?
-    module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
-    if (!islandora_cwrc_document_check_xml($file)) {
-      form_set_error('file', t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
+    else {
+      // Is it well-formed XML?
+      module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
+      if (!islandora_cwrc_document_check_xml($file)) {
+        form_set_error('file', t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
+      }
     }
   }
 }
