@@ -4,10 +4,14 @@
  * Defines hooks and required objects for the module.
  */
 
+// Objects.
 define('ISLANDORA_CWRC_DOCUMENT_COLLECTION_PID', 'cwrc:documentCollection');
 define('ISLANDORA_CWRC_DOCUMENT_TEMPLATE_COLLECTION_PID', 'cwrc:documentTemplateCollection');
 define('ISLANDORA_CWRC_DOCUMENT_CONTENT_MODEL', 'cwrc:documentCModel');
 define('ISLANDORA_CWRC_DOCUMENT_TEMPLATE_CONTENT_MODEL', 'cwrc:documentTemplateCModel');
+// Permissions.
+define('ISLANDORA_CWRC_DOCUMENT_VIEW_CWRC', 'view CWRC datastreams');
+define('ISLANDORA_CWRC_DOCUMENT_ANNOTATE_CWRC', 'annotate CWRC datastreams');
 define('ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC', 'edit CWRC datastreams');
 
 /**
@@ -15,12 +19,26 @@ define('ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC', 'edit CWRC datastreams');
  */
 function islandora_cwrc_document_menu() {
   $items = array();
-  $items['islandora/object/%islandora_object/cwrc-writer'] = array(
-    'title' => 'CWRC Writer',
+  $items['islandora/object/%islandora_object/edit-cwrc'] = array(
+    'title' => 'Edit',
     'page callback' => 'islandora_cwrc_document_display_cwrc_writer',
-    'page arguments' => array(2),
+    'page arguments' => array(2, array('initial_mode' => 'edit')),
     'access callback' => 'islandora_cwrc_document_access_callback',
     'access arguments' => array(ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC, 2),
+    'load arguments' => array(2),
+    'file' => 'includes/utilities.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 0,
+  );
+  $items['islandora/object/%islandora_object/annotate-cwrc'] = array(
+    'title' => 'Annotate',
+    'page callback' => 'islandora_cwrc_document_display_cwrc_writer',
+    'page arguments' => array(2, array(
+      'initial_mode' => 'annotate',
+      'readonly' => TRUE,
+    )),
+    'access callback' => 'islandora_cwrc_document_access_callback',
+    'access arguments' => array(ISLANDORA_CWRC_DOCUMENT_ANNOTATE_CWRC, 2),
     'load arguments' => array(2),
     'file' => 'includes/utilities.inc',
     'type' => MENU_LOCAL_TASK,
@@ -252,9 +270,17 @@ function islandora_cwrc_document_islandora_edit_datastream_registry(AbstractObje
  */
 function islandora_cwrc_document_permission() {
   return array(
+    ISLANDORA_CWRC_DOCUMENT_VIEW_CWRC => array(
+      'title' => t('View CWRC documents'),
+      'description' => t('View CWRC documents inside the CWRC-Writer'),
+    ),
+    ISLANDORA_CWRC_DOCUMENT_ANNOTATE_CWRC => array(
+      'title' => t('Annotate CWRC documents'),
+      'description' => t('Annotate CWRC documents inside the CWRC-Writer'),
+    ),
     ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC => array(
       'title' => t('Edit CWRC documents'),
-      'description' => t('Modify XML within the CWRC-Writer'),
+      'description' => t('Modify CWRC documents inside the CWRC-Writer'),
     ),
   );
 }
@@ -291,4 +317,19 @@ function islandora_cwrc_document_xml_validate($form, &$form_state) {
  */
 function islandora_cwrc_document_preprocess_islandora_cwrc_writer(&$variables) {
   $variables['settings']['buttons1'] = 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,savebutton';
+  $variables['settings'] += isset($variables['config']) ? (array) $variables['config'] : array();
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_cwrc_document_cwrc_documentCModel_islandora_view_object($object) {
+  if (user_access(ISLANDORA_CWRC_DOCUMENT_VIEW_CWRC)) {
+    module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
+    $config = array(
+      'readonly' => TRUE,
+      'initial_mode' => 'read',
+    );
+    return islandora_cwrc_document_display_cwrc_writer($object, $config);
+  }
 }
