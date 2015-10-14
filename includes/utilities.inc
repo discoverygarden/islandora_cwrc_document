@@ -20,13 +20,15 @@ function islandora_cwrc_document_display_cwrc_writer(AbstractObject $object, arr
   module_load_include('inc', 'islandora', 'includes/breadcrumb');
   drupal_set_title($object->label);
   drupal_set_breadcrumb(islandora_get_breadcrumbs($object));
-  return theme('islandora_cwrc_writer', array(
-    'object' => $object,
-    'schema' => islandora_cwrc_writer_get_document_schema_pid($object),
-    'documents' => array($object->id),
-    'sources' => array(),
-    'config' => $config,
-  ));
+  return array(
+    'cwrc_writer' => array(
+      '#object' => $object,
+      '#schema' => islandora_cwrc_writer_get_document_schema_pid($object),
+      '#documents' => array($object->id),
+      '#sources' => array(),
+      '#config' => $config,
+    ),
+  );
 }
 
 /**
