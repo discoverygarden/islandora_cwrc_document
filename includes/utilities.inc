@@ -22,6 +22,7 @@ function islandora_cwrc_document_display_cwrc_writer(AbstractObject $object, arr
   drupal_set_breadcrumb(islandora_get_breadcrumbs($object));
   return array(
     'cwrc_writer' => array(
+      '#theme' => 'islandora_cwrc_writer',
       '#object' => $object,
       '#schema' => islandora_cwrc_writer_get_document_schema_pid($object),
       '#documents' => array($object->id),
