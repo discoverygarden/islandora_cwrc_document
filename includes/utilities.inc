@@ -7,6 +7,10 @@
 /**
  * Helper to load up the CWRC Writer.
  *
+ * @param array $form
+ *   An array representing a form within Drupal.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
  * @param AbstractObject $object
  *   An object to be edited.
  * @param array $config
@@ -15,11 +19,16 @@
  * @return array
  *   An array to be rendered.
  */
-function islandora_cwrc_document_display_cwrc_writer(AbstractObject $object, array $config = array()) {
+function islandora_cwrc_document_display_cwrc_writer($form, $form_state, AbstractObject $object, array $config = array()) {
   module_load_include('inc', 'islandora_cwrc_writer', 'includes/utilities');
   module_load_include('inc', 'islandora', 'includes/breadcrumb');
   drupal_set_title($object->label);
   drupal_set_breadcrumb(islandora_get_breadcrumbs($object));
+  form_load_include($form_state, 'inc', 'islandora_object_lock', 'includes/form_handlers');
+  if (isset($config['initial_mode']) && $config['initial_mode'] != 'read') {
+    islandora_object_lock_acquire_during_alter($form, $form_state, $object, 'CWRC', NULL, TRUE, "islandora/object/{$object->id}");
+  }
+
   return array(
     'cwrc_writer' => array(
       '#theme' => 'islandora_cwrc_writer',
@@ -112,15 +121,16 @@ function islandora_cwrc_document_view_datastream(AbstractDatastream $datastream,
           $modified = file_unmanaged_save_data($cwrc, 'temporary://');
 
           // Construct a dummy datastream. This won't be ingested, but is rather
-          // just passed on to islandora_view_datastream() in lieu of the regular
-          // one so we can reuse that code.
+          // just passed on to islandora_view_datastream() in lieu of the
+          // regular one so we can reuse that code.
           $download_version = $object->constructDatastream('CWRC_DOWNLOADABLE');
           $download_version->label = $datastream->label;
           $download_version->state = $datastream->state;
           $download_version->mimetype = $datastream->mimetype;
           $download_version->createdDate = $datastream->createdDate;
           $download_version->setContentFromFile($modified);
-          // No size data exists until the datastream is ingested, so set it now.
+          // No size data exists until the datastream is ingested, so set it
+          // now.
           $download_version->size = filesize($modified);
           unlink($modified);
           islandora_view_datastream($download_version, $download, $version);
@@ -128,7 +138,7 @@ function islandora_cwrc_document_view_datastream(AbstractDatastream $datastream,
       }
     }
   }
-  
+
   // Default in all other cases.
   islandora_view_datastream($datastream, $download, $version);
 }

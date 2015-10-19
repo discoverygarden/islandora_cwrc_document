@@ -21,8 +21,12 @@ function islandora_cwrc_document_menu() {
   $items = array();
   $items['islandora/object/%islandora_object/edit-cwrc'] = array(
     'title' => 'Edit',
-    'page callback' => 'islandora_cwrc_document_display_cwrc_writer',
-    'page arguments' => array(2, array('initial_mode' => 'edit')),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'islandora_cwrc_document_display_cwrc_writer',
+      2,
+      array('initial_mode' => 'edit'),
+    ),
     'access callback' => 'islandora_cwrc_document_access_callback',
     'access arguments' => array(ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC, 2),
     'load arguments' => array(2),
@@ -32,11 +36,15 @@ function islandora_cwrc_document_menu() {
   );
   $items['islandora/object/%islandora_object/annotate-cwrc'] = array(
     'title' => 'Annotate',
-    'page callback' => 'islandora_cwrc_document_display_cwrc_writer',
-    'page arguments' => array(2, array(
-      'initial_mode' => 'annotate',
-      'readonly' => TRUE,
-    )),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'islandora_cwrc_document_display_cwrc_writer',
+      2,
+      array(
+        'initial_mode' => 'annotate',
+        'readonly' => TRUE,
+      ),
+    ),
     'access callback' => 'islandora_cwrc_document_access_callback',
     'access arguments' => array(ISLANDORA_CWRC_DOCUMENT_ANNOTATE_CWRC, 2),
     'load arguments' => array(2),
@@ -183,7 +191,7 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
   $template_cmodel->owner = 'fedoraAdmin';
   $template_cmodel->label = 'CWRC Document Template Content Model';
   $template_cmodel->models = 'fedora-system:ContentModel-3.0';
-  //DS-COMPOSITE-MODEL
+  // DS-COMPOSITE-MODEL.
   $ds = $template_cmodel->constructDatastream('DS-COMPOSITE-MODEL', 'X');
   $ds->label = 'DS-COMPOSITE-MODEL';
   $ds->mimetype = 'application/xml';
@@ -205,7 +213,7 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
   // Standard templates.
   foreach (islandora_cwrc_document_get_stock_templates() as $stock_template) {
     // Template object.
-    $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]= $repository->constructObject($stock_template['pid']);
+    $objects['islandora_cwrc_document']['objects'][$stock_template['pid']] = $repository->constructObject($stock_template['pid']);
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->owner = 'fedoraAdmin';
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->label = $stock_template['label'];
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->models = ISLANDORA_CWRC_DOCUMENT_TEMPLATE_CONTENT_MODEL;
@@ -217,7 +225,7 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
     $td->setContentFromFile("$module_path/xml/templates/{$stock_template['filename']}", FALSE);
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->ingestDatastream($td);
   }
-  
+
   return $objects;
 }
 
@@ -316,7 +324,7 @@ function islandora_cwrc_document_xml_validate($form, &$form_state) {
  * Implements hook_preprocess_islandora_cwrc_writer().
  */
 function islandora_cwrc_document_preprocess_islandora_cwrc_writer(&$variables) {
-  $variables['settings']['buttons1'] = 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,savebutton';
+  $variables['settings']['buttons1'] = 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,savebutton,saveexitbutton';
   $variables['settings'] += isset($variables['config']) ? (array) $variables['config'] : array();
 }
 
@@ -330,6 +338,8 @@ function islandora_cwrc_document_cwrc_documentCModel_islandora_view_object($obje
       'readonly' => TRUE,
       'initial_mode' => 'read',
     );
-    return islandora_cwrc_document_display_cwrc_writer($object, $config);
+    return array(
+      'cwrc_writer' => drupal_get_form('islandora_cwrc_document_display_cwrc_writer', $object, $config),
+    );
   }
 }
