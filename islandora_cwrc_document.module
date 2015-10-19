@@ -338,6 +338,8 @@ function islandora_cwrc_document_cwrc_documentCModel_islandora_view_object($obje
       'readonly' => TRUE,
       'initial_mode' => 'read',
     );
-    return drupal_get_form('islandora_cwrc_document_display_cwrc_writer', $object, $config);
+    return array(
+      'cwrc_writer' => drupal_get_form('islandora_cwrc_document_display_cwrc_writer', $object, $config),
+    );
   }
 }
