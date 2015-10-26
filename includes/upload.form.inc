@@ -115,8 +115,6 @@ function islandora_cwrc_document_upload_form_submit($form, $form_state) {
   module_load_include('inc', 'islandora', 'includes/ingest.form.inc');
   module_load_include('inc', 'islandora_cwrc_writer', 'includes/utilities');
   $object = islandora_ingest_form_get_object($form_state);
-  $schema = islandora_object_load($form_state['values']['schema']);
-  islandora_cwrc_writer_set_document_schema($object, $schema);
   if (!isset($object['CWRC'])) {
     $ds = $object->constructDatastream('CWRC', 'M');
     $object->ingestDatastream($ds);
@@ -128,6 +126,8 @@ function islandora_cwrc_document_upload_form_submit($form, $form_state) {
     $file = file_load($form_state['values']['file']);
     $ds->setContentFromFile($file->uri, FALSE);
     $ds->label = $file->filename;
+    $schema = islandora_object_load($form_state['values']['schema']);
+    islandora_cwrc_writer_set_document_schema($object, $schema);
   }
   else {
     $source = islandora_datastream_load('TEMPLATE', $form_state['values']['template']);
