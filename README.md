@@ -15,6 +15,15 @@ This module requires the following modules/libraries:
 
 Install as usual, see [this](https://drupal.org/documentation/install/modules-themes/modules-7) for further information.
 
+## Configuration
+
+The Islandora CWRC Document module defines three permissions that allow users to view, annotate and edit CWRC datastreams. These allow access to tabs on CWRC Document objects that load the CWRC-Writer into modes appropriate for each task.
+
+It's important to note that because viewing and editing datastreams in the CWRC-Writer is done through the lens of Islandora REST, REST-related permissions will also have to be given to users with the above three permissions. Specifically:
+
+- Users with the 'view' permission should also be given the Islandora REST 'View objects' and 'View datastreams' permissions.
+- Users with the 'annotate' and/or 'edit' permissions should also be given the Islandora REST 'Modify datastreams' permission.
+
 ## Troubleshooting/Issues
 
 Having problems or solved a problem? Contact [discoverygarden](http://support.discoverygarden.ca).
