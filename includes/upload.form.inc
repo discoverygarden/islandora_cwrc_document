@@ -66,6 +66,7 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
       'required' => array(
         ':input[name="source"]' => array('value' => 'file'),
       ),
+    ),
   );
 
   // There's a weird issue in Drupal (https://www.drupal.org/node/1592688) where
