@@ -26,21 +26,14 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
     $name = $schema['name'];
     $schema_options[$pid] = $name;
   }
-  $definition['schema'] = array(
-    '#title' => t('Schema'),
-    '#description' => t('Please select a valid schema for this document.'),
-    '#type' => 'select',
-    '#required' => TRUE,
-    '#options' => $schema_options,
-  );
   $definition['source'] = array(
-    '#title' => t('TEI Source Type'),
+    '#title' => t('Create Document:'),
     '#description' => t('Select whether the TEI will be uploaded from a file or selected from predefined templates.'),
     '#type' => 'radios',
     '#default_value' => isset($form_state['values']['source']) ? $form_state['values']['source'] : 'file',
     '#options' => array(
-      'file' => t('File Upload'),
-      'template' => t('Template'),
+      'file' => t('From File'),
+      'template' => t('From Template'),
     ),
   );
   $definition['template'] = array(
@@ -61,6 +54,20 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
     ),
   );
   $definition['file'] = islandora_cwrc_document_get_file_upload_element($form_state);
+  $definition['schema'] = array(
+    '#title' => t('Schema'),
+    '#description' => t('Please select a valid schema for this document.'),
+    '#type' => 'select',
+    '#options' => $schema_options,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="source"]' => array('value' => 'file'),
+      ),
+      'required' => array(
+        ':input[name="source"]' => array('value' => 'file'),
+      ),
+  );
+
   // There's a weird issue in Drupal (https://www.drupal.org/node/1592688) where
   // #states can cause things to be required twice. Still functional; just needs
   // that patch to make it look proper.
