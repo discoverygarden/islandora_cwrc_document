@@ -175,7 +175,11 @@ function islandora_cwrc_document_get_rng_css_accessibility($object) {
 function islandora_cwrc_document_check_xml($file) {
   // Check that the uploaded file is well-formed XML.
   libxml_use_internal_errors(TRUE);
-  simplexml_load_file(drupal_realpath($file->uri));
+  $file_contents = file_get_contents(drupal_realpath($file->uri));
+  // XXX: Remove xml-model tag for validation as it will trigger a libxml error
+  // depending on the compiled libxml2 version.
+  $file_contents = preg_replace('/<\?xml-model .*\?>/', '', $file_contents);
+  simplexml_load_string($file_contents);
   $errors = count(libxml_get_errors());
   libxml_use_internal_errors(FALSE);
   if ($errors) {
