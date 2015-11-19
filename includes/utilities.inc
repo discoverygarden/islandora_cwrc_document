@@ -133,7 +133,7 @@ function islandora_cwrc_document_view_datastream(AbstractDatastream $datastream,
           // now.
           $download_version->size = filesize($modified);
           unlink($modified);
-          islandora_view_datastream($download_version, $download, $version);
+          islandora_view_datastream($download_version, $download);
         }
       }
     }
