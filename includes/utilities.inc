@@ -95,7 +95,7 @@ function islandora_cwrc_document_view_datastream(AbstractDatastream $datastream,
 
           // Attempt to add the two datastreams.
           foreach ($accessibles as $accessible) {
-            $url = $schema_object[$accessible]->controlGroup == 'X' || 'M' ?
+            $url = $schema_object[$accessible]->controlGroup === 'X' || $schema_object[$accessible]->controlGroup === 'M' ?
               "$base_url/islandora/object/{$schema_object->id}/datastream/$accessible/view" :
               $schema_object[$accessible]->url;
             if ($accessible == 'SCHEMA') {
