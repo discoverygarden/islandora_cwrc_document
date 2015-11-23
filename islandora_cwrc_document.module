@@ -67,15 +67,15 @@ function islandora_cwrc_document_menu() {
  */
 function islandora_cwrc_document_menu_alter(&$items) {
   $path = drupal_get_path('module', 'islandora_cwrc_document');
-  $items['islandora/object/%islandora_object/datastream/%islandora_datastream/view'] = array(
+  $items['islandora/object/%islandora_tokened_object/datastream/%islandora_tokened_datastream/view'] = array(
     'title' => 'View datastream',
     'page callback' => 'islandora_cwrc_document_view_datastream',
     'page arguments' => array(4, FALSE, NULL),
     'type' => MENU_CALLBACK,
     'file' => "$path/includes/utilities.inc",
-    'access callback' => 'islandora_datastream_access',
-    'access arguments' => array(ISLANDORA_VIEW_OBJECTS, 4),
-    'load arguments' => array(2),
+    'load arguments' => array('%map'),
+    'access callback' => 'islandora_object_datastream_tokened_access_callback',
+    'access arguments' => array(ISLANDORA_VIEW_OBJECTS, 2, 4),
   );
   $items['islandora/object/%islandora_object/datastream/%islandora_datastream/version/%/view'] = array(
     'title' => 'View datastream version',
