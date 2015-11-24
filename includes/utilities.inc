@@ -67,10 +67,10 @@ function islandora_cwrc_document_view_datastream(AbstractDatastream $datastream,
   module_load_include('inc', 'islandora_cwrc_writer', 'includes/document');
 
   try {
-    $result = islandora_cwrc_writer_style_document($datastream);
+    $object = $datastream->parent;
+    $result = islandora_cwrc_writer_style_document($datastream, $object);
 
     // Otherwise, make a temp datastream and serve the styled contents.
-    $object = $datastream->parent;
     $modified = file_unmanaged_save_data($result, 'temporary://');
 
     // Construct a dummy datastream. This won't be ingested, but is rather
