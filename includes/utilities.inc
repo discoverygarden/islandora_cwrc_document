@@ -68,6 +68,14 @@ function islandora_cwrc_document_view_datastream(AbstractDatastream $datastream,
 
   try {
     $object = $datastream->parent;
+
+    // TODO: This shouldn't be hardcoded, and should be configurable.  We'd
+    // have to push DSID/CMODEL pairs into configuration since this menu
+    // callback is meant to imitate islandora_view_datastream's interface.
+    if (!(in_array($datstream->id, array("CWRC", "TEMPLATE")) && in_array('cwrc:documentCModel', $object->models))) {
+      throw new InvalidArgumentException("Attempting to style incorrect datastream or parent object is not a CWRC document.");
+    }
+
     $result = islandora_cwrc_writer_style_document($datastream, $object);
 
     // Otherwise, make a temp datastream and serve the styled contents.
