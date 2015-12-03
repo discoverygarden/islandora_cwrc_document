@@ -16,16 +16,8 @@
  *   An array representing a Drupal form to be rendered.
  */
 function islandora_cwrc_document_upload_form($form, $form_state) {
-  module_load_include('inc', 'islandora_cwrc_writer', 'includes/utilities');
   module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
   $definition = array();
-  $schemas = islandora_cwrc_writer_get_schemas();
-  $schema_options = array();
-  foreach ($schemas as $schema) {
-    $pid = $schema['pid'];
-    $name = $schema['name'];
-    $schema_options[$pid] = $name;
-  }
   $definition['source'] = array(
     '#title' => t('Create Document:'),
     '#description' => t('Select whether the TEI will be uploaded from a file or selected from predefined templates.'),
@@ -58,7 +50,7 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
     '#title' => t('Schema'),
     '#description' => t('Please select a valid schema for this document.'),
     '#type' => 'select',
-    '#options' => $schema_options,
+    '#options' => islandora_cwrc_document_get_schema_options(),
     '#states' => array(
       'visible' => array(
         ':input[name="source"]' => array('value' => 'file'),
@@ -84,22 +76,29 @@ function islandora_cwrc_document_upload_form($form, $form_state) {
 }
 
 /**
+ * Formats default schema selections for a drop-down.
+ *
+ * @return array
+ *   Array of schemas to select, keyed by PID.
+ */
+function islandora_cwrc_document_get_schema_options() {
+  module_load_include('inc', 'islandora_cwrc_writer', 'includes/utilities');
+  $schemas = islandora_cwrc_writer_get_schemas();
+  $schema_options = array();
+  foreach ($schemas as $schema) {
+    $pid = $schema['pid'];
+    $name = $schema['name'];
+    $schema_options[$pid] = $name;
+  }
+  return $schema_options;
+}
+
+/**
  * Checks that the given document is valid according to the given schema.
  */
 function islandora_cwrc_document_upload_form_validate(array $form, array &$form_state) {
   if ($form_state['values']['source'] == 'file') {
-    // Is there a file?
-    $file = file_load($form_state['values']['file']);
-    if ($file === FALSE) {
-      form_set_error('file', t('Please upload a file.'));
-    }
-    else {
-      // Is it well-formed XML?
-      module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
-      if (!islandora_cwrc_document_check_xml($file)) {
-        form_set_error('file', t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
-      }
-    }
+    islandora_cwrc_document_template_upload_form_validate($form, $form_state);
   }
 }
 
@@ -160,10 +159,17 @@ function islandora_cwrc_document_upload_form_submit($form, $form_state) {
  *   The form definition.
  */
 function islandora_cwrc_document_template_upload_form($form, $form_state) {
+  module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
   $form = array(
     'file' => islandora_cwrc_document_get_file_upload_element($form_state),
   );
   $form['file']['#required'] = TRUE;
+  $form['schema'] = array(
+    '#title' => t('Schema'),
+    '#description' => t('Please select a valid schema for this document.'),
+    '#type' => 'select',
+    '#options' => islandora_cwrc_document_get_schema_options(),
+  );
   return $form;
 }
 
@@ -176,7 +182,18 @@ function islandora_cwrc_document_template_upload_form($form, $form_state) {
  *   The Drupal form state.
  */
 function islandora_cwrc_document_template_upload_form_validate(&$form, &$form_state) {
-  islandora_cwrc_document_upload_form_validate($form, $form_state);
+  // Is there a file?
+  $file = file_load($form_state['values']['file']);
+  if ($file === FALSE) {
+    form_set_error('file', t('Please upload a file.'));
+  }
+  else {
+    // Is it well-formed XML?
+    module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
+    if (!islandora_cwrc_document_check_xml($file)) {
+      form_set_error('file', t('The uploaded file @file is not well-formed XML.', array('@file' => $file->filename)));
+    }
+  }
 }
 
 /**
@@ -199,10 +216,13 @@ function islandora_cwrc_document_template_upload_form_submit($form, $form_state)
   }
   $source = file_load($form_state['values']['file']);
   $ds->setContentFromFile($source->uri, FALSE);
-  $ds->label = $file->filename;
+  $ds->label = $source->filename;
   $ds->mimetype = 'application/xml';
-}
 
+  // Set the template's schema from user selection
+  $schema = islandora_object_load($form_state['values']['schema']);
+  islandora_cwrc_writer_set_document_schema($object, $schema);
+}
 
 /**
  * Gets a file upload element for CWRC/TEMPLATE datastreams.
