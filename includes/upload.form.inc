@@ -132,8 +132,8 @@ function islandora_cwrc_document_upload_form_submit($form, $form_state) {
     $source = $template['TEMPLATE'];
     $ds->setContentFromString($source->content);
     $ds->label = $source->label;
-    
-    // Hack the schema out of the template's rels ext
+
+    // Hack the schema out of the template's rels ext.
     $schema_relationship = $template->relationships->get(
       CWRC_RELS_EXT_URI,
       ISLANDORA_CWRC_WRITER_SCHEMA_RELATIONSHIP
@@ -219,7 +219,7 @@ function islandora_cwrc_document_template_upload_form_submit($form, $form_state)
   $ds->label = $source->filename;
   $ds->mimetype = 'application/xml';
 
-  // Set the template's schema from user selection
+  // Set the template's schema from user selection.
   $schema = islandora_object_load($form_state['values']['schema']);
   islandora_cwrc_writer_set_document_schema($object, $schema);
 }
