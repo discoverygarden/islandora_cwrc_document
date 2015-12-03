@@ -134,6 +134,7 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
   $islandora_path = drupal_get_path('module', 'islandora');
   $repository = $connection->repository;
   $root_pid = variable_get('islandora_repository_pid', 'islandora:root');
+  module_load_include('inc', 'islandora_cwrc_writer', 'includes/utilities');
   module_load_include('inc', 'islandora_cwrc_document', 'includes/utilities');
 
   // Collection object.
@@ -224,6 +225,10 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
     $td->mimetype = 'application/xml';
     $td->setContentFromFile("$module_path/xml/templates/{$stock_template['filename']}", FALSE);
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->ingestDatastream($td);
+
+    // Add a reference to the schema
+    $schema = islandora_object_load($stock_template['schema']);
+    islandora_cwrc_writer_set_document_schema($objects['islandora_cwrc_document']['objects'][$stock_template['pid']], $schema);
   }
 
   return $objects;

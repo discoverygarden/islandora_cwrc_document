@@ -127,13 +127,24 @@ function islandora_cwrc_document_upload_form_submit($form, $form_state) {
     $ds->setContentFromFile($file->uri, FALSE);
     $ds->label = $file->filename;
     $schema = islandora_object_load($form_state['values']['schema']);
-    islandora_cwrc_writer_set_document_schema($object, $schema);
   }
   else {
-    $source = islandora_datastream_load('TEMPLATE', $form_state['values']['template']);
+    $template = islandora_object_load($form_state['values']['template']);
+    $source = $template['TEMPLATE'];
     $ds->setContentFromString($source->content);
     $ds->label = $source->label;
+    
+    // Hack the schema out of the template's rels ext
+    $schema_relationship = $template->relationships->get(
+      CWRC_RELS_EXT_URI,
+      ISLANDORA_CWRC_WRITER_SCHEMA_RELATIONSHIP
+    );
+    $schema_pid = isset($schema_relationship[0]['object']['value']) ? $schema_relationship[0]['object']['value'] : "cwrc:teiSchema";
+    $schema = islandora_object_load($schema_pid);
   }
+
+  // Associate the document with the appropriate schema.
+  islandora_cwrc_writer_set_document_schema($object, $schema);
   $ds->mimetype = 'application/xml';
 }
 
