@@ -160,19 +160,19 @@ function islandora_cwrc_document_get_stock_templates() {
       'pid' => 'cwrc:letterTemplate',
       'label' => 'Letter (Template)',
       'filename' => "letter.xml",
-      'schema' => "cwrc:writingSchema",
+      'schema' => "cwrc:teiSchema",
     ),
     array(
       'pid' => 'cwrc:poemTemplate',
       'label' => 'Poem (Template)',
       'filename' => "poem.xml",
-      'schema' => "cwrc:writingSchema",
+      'schema' => "cwrc:teiSchema",
     ),
     array(
       'pid' => 'cwrc:proseTemplate',
       'label' => 'Prose',
       'filename' => "prose.xml",
-      'schema' => "cwrc:writingSchema",
+      'schema' => "cwrc:teiSchema",
     ),
     array(
       'pid' => 'cwrc:sampleBiography',
@@ -184,13 +184,13 @@ function islandora_cwrc_document_get_stock_templates() {
       'pid' => 'cwrc:sampleLetter',
       'label' => 'Letter (Sample)',
       'filename' => 'sample_letter.xml',
-      'schema' => "cwrc:writingSchema",
+      'schema' => "cwrc:teiSchema",
     ),
     array(
       'pid' => 'cwrc:samplePoem',
       'label' => 'Poem (Sample)',
       'filename' => 'sample_poem.xml',
-      'schema' => "cwrc:writingSchema",
+      'schema' => "cwrc:teiSchema",
     ),
     array(
       'pid' => 'cwrc:sampleWriting',
