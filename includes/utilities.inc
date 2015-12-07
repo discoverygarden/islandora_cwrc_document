@@ -134,6 +134,7 @@ function islandora_cwrc_document_check_xml($file) {
  *   - 'pid' for the destination PID of the template,
  *   - 'label' for the template label, and
  *   - 'filename' for the name of the template XML file.
+ *   - 'schema' for the associated schema object
  */
 function islandora_cwrc_document_get_stock_templates() {
   return array(
@@ -141,56 +142,67 @@ function islandora_cwrc_document_get_stock_templates() {
       'pid' => 'cwrc:biographyTemplate',
       'label' => 'Biography (Template)',
       'filename' => "biography.xml",
+      'schema' => "cwrc:biographySchema",
     ),
     array(
       'pid' => 'cwrc:blankTEIDocument',
       'label' => 'Blank TEI Document',
       'filename' => "blank_TEI_document.xml",
+      'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:eventTemplate',
       'label' => 'Event',
       'filename' => "event.xml",
+      'schema' => "cwrc:eventsSchema",
     ),
     array(
       'pid' => 'cwrc:letterTemplate',
       'label' => 'Letter (Template)',
       'filename' => "letter.xml",
+      'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:poemTemplate',
       'label' => 'Poem (Template)',
       'filename' => "poem.xml",
+      'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:proseTemplate',
       'label' => 'Prose',
       'filename' => "prose.xml",
+      'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:sampleBiography',
       'label' => 'Biography (Sample)',
       'filename' => 'sample_biography.xml',
+      'schema' => "cwrc:biographySchema",
     ),
     array(
       'pid' => 'cwrc:sampleLetter',
       'label' => 'Letter (Sample)',
       'filename' => 'sample_letter.xml',
+      'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:samplePoem',
       'label' => 'Poem (Sample)',
       'filename' => 'sample_poem.xml',
+      'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:sampleWriting',
       'label' => 'Writing (Sample)',
       'filename' => 'sample_writing.xml',
+      'schema' => "cwrc:writingSchema",
     ),
     array(
       'pid' => 'cwrc:writingTemplate',
       'label' => 'Writing (Template)',
       'filename' => 'writing.xml',
+      'schema' => "cwrc:writingSchema",
     ),
   );
 }
