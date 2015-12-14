@@ -138,7 +138,8 @@ function islandora_cwrc_document_upload_form_submit($form, $form_state) {
       CWRC_RELS_EXT_URI,
       ISLANDORA_CWRC_WRITER_SCHEMA_RELATIONSHIP
     );
-    $schema_pid = isset($schema_relationship[0]['object']['value']) ? $schema_relationship[0]['object']['value'] : "cwrc:teiSchema";
+    $first_schema = reset($schema_relationship);
+    $schema_pid = $first_schema ? $first_schema['object']['value'] : variable_get('islandora_cwrc_writer_default_schema_object', 'cwrc:teiSchema');
     $schema = islandora_object_load($schema_pid);
   }
 

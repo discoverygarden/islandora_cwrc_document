@@ -226,7 +226,7 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
     $td->setContentFromFile("$module_path/xml/templates/{$stock_template['filename']}", FALSE);
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->ingestDatastream($td);
 
-    // Add a reference to the schema
+    // Add a reference to the schema.
     $schema = islandora_object_load($stock_template['schema']);
     islandora_cwrc_writer_set_document_schema($objects['islandora_cwrc_document']['objects'][$stock_template['pid']], $schema);
   }
