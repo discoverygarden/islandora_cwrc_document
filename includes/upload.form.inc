@@ -165,6 +165,12 @@ function islandora_cwrc_document_template_upload_form($form, $form_state) {
     'file' => islandora_cwrc_document_get_file_upload_element($form_state),
   );
   $form['file']['#required'] = TRUE;
+  $form['label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Template Name'),
+    '#required' => TRUE,
+    '#weight' => -1,
+  );
   $form['schema'] = array(
     '#title' => t('Schema'),
     '#description' => t('Please select a valid schema for this document.'),
@@ -207,6 +213,7 @@ function islandora_cwrc_document_template_upload_form_validate(&$form, &$form_st
  */
 function islandora_cwrc_document_template_upload_form_submit($form, $form_state) {
   module_load_include('inc', 'islandora', 'includes/ingest.form.inc');
+  module_load_include('inc', 'islandora_cwrc_writer', 'includes/utilities');
   $object = islandora_ingest_form_get_object($form_state);
   if (!isset($object['TEMPLATE'])) {
     $ds = $object->constructDatastream('TEMPLATE', 'M');
@@ -219,7 +226,8 @@ function islandora_cwrc_document_template_upload_form_submit($form, $form_state)
   $ds->setContentFromFile($source->uri, FALSE);
   $ds->label = $source->filename;
   $ds->mimetype = 'application/xml';
-
+  // Set the label of the template given the user input.
+  $object->label = check_plain($form_state['values']['label']);
   // Set the template's schema from user selection.
   $schema = islandora_object_load($form_state['values']['schema']);
   islandora_cwrc_writer_set_document_schema($object, $schema);
