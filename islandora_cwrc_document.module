@@ -330,7 +330,8 @@ function islandora_cwrc_document_xml_validate($form, &$form_state) {
  */
 function islandora_cwrc_document_preprocess_islandora_cwrc_writer(&$variables) {
   // Establish the set buttons.
-  $variables['settings']['buttons1'] = 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,';
+  $variables['settings']['buttons1'] = 'schematags,|,addperson,addplace,adddate,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,';
+
   if (isset($variables['config']['initial_mode']) && $variables['config']['initial_mode'] == 'edit') {
     $variables['settings']['buttons1'] .= 'viewsource,editsource,|,';
   }
