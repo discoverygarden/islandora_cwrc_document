@@ -123,7 +123,7 @@ function islandora_cwrc_document_access_callback($op, $object = NULL) {
   if (!in_array(ISLANDORA_CWRC_DOCUMENT_CONTENT_MODEL, $object->models)) {
     return FALSE;
   }
-  return isset($object['CWRC']) && islandora_datastream_access($op, $object['CWRC']);
+  return isset($object['CWRC']) && islandora_datastream_access($op, $object['CWRC']) && islandora_datastream_access(ISLANDORA_METADATA_EDIT, $object['CWRC']);
 }
 
 /**
