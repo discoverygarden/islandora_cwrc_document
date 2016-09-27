@@ -44,8 +44,19 @@ function islandora_cwrc_document_display_cwrc_writer($form, $form_state, Abstrac
 /**
  * Show the note version of the CWRC-Writer.
  */
-function islandora_cwrc_document_display_cwrc_writer_note() {
-  drupal_goto('cwrc/editor/note.htm');
+function islandora_cwrc_document_display_cwrc_writer_note(AbstractObject $object) {
+    module_load_include('inc', 'islandora_cwrc_writer', 'includes/utilities');
+    return array(
+        '#type' => 'page',
+        '#theme_wrappers' => array('islandora_cwrc_writer_iframe'),
+        'content' => array(
+            '#theme' => 'islandora_cwrc_writer_note',
+            '#documents' => array($object->id),
+            '#schema' => islandora_cwrc_writer_get_document_schema_pid($object),
+            ),
+        );
+    //2016-09-27 - removed drupal_goto to add schemaId to call
+    //drupal_goto('cwrc/editor/note.htm');
 }
 
 /**
