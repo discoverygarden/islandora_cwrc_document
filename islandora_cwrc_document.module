@@ -224,10 +224,19 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->models = ISLANDORA_CWRC_DOCUMENT_TEMPLATE_CONTENT_MODEL;
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', ISLANDORA_CWRC_DOCUMENT_TEMPLATE_COLLECTION_PID);
     // TEMPLATE datastream.
-    $td = $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->constructDatastream('TEMPLATE', 'M');
-    $td->label = "{$stock_template['label']} TEI";
-    $td->mimetype = 'application/xml';
-    $td->setContentFromFile("$module_path/xml/templates/{$stock_template['filename']}", FALSE);
+    if ($stock_template['url'])
+    {
+      $td = $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->constructDatastream('TEMPLATE', 'R');
+      $td->label = "{$stock_template['label']} TEI";
+      $td->mimetype = 'application/xml';
+      $td->url = $stock_template['url'];
+    }
+    else {
+      $td = $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->constructDatastream('TEMPLATE', 'M');
+      $td->label = "{$stock_template['label']} TEI";
+      $td->mimetype = 'application/xml';
+      $td->setContentFromFile("$module_path/xml/templates/{$stock_template['filename']}", FALSE);
+    }
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->ingestDatastream($td);
 
     // Add a reference to the schema.
