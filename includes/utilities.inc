@@ -164,6 +164,13 @@ function islandora_cwrc_document_get_stock_templates() {
       'schema' => "cwrc:teiLiteSchema",
     ),
     array(
+      'pid' => 'cwrc:entryTemplate',
+      'label' => 'CWRC Entry (Template)',
+      'filename' => "cwrc_entry_template.xml",
+      'url' => "http://cwrc.ca/templates/cwrc_entry_template.xml",
+      'schema' => "cwrc:entrySchema",
+    ),
+    array(
       'pid' => 'cwrc:eventTemplate',
       'label' => 'Event (Template)',
       'filename' => "event.xml",
