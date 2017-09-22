@@ -245,12 +245,14 @@ function islandora_cwrc_document_get_stock_templates() {
 function islandora_cwrc_document_get_templates() {
   $content_model = ISLANDORA_CWRC_DOCUMENT_TEMPLATE_CONTENT_MODEL;
   $query = <<<EOQ
+PREFIX fedora-model: <info:fedora/fedora-system:def/model#>
+PREFIX fedora-view: <info:fedora/fedora-system:def/view#>
 SELECT ?pid ?label
 FROM <#ri>
 WHERE {
-  ?pid <fedora-model:hasModel> <info:fedora/$content_model> .
-  ?pid <fedora-model:label> ?label .
-  ?ds  <fedora-view:disseminationType> <info:fedora/*/TEMPLATE> .
+  ?pid fedora-model:hasModel <info:fedora/$content_model> .
+  ?pid fedora-model:label ?label .
+  ?ds  fedora-view:disseminationType <info:fedora/*/TEMPLATE> .
   ?pid <info:fedora/fedora-system:def/view#disseminates> ?ds
 }
 EOQ;
