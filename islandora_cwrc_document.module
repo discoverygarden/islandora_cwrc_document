@@ -348,9 +348,9 @@ function islandora_cwrc_document_preprocess_islandora_cwrc_writer(&$variables) {
   $variables['settings']['buttons1'] = 'schematags,|,addperson,addplace,adddate,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,';
 
   if (isset($variables['config']['initial_mode']) && $variables['config']['initial_mode'] == 'edit') {
-    $variables['settings']['buttons1'] .= 'viewsource,editsource,|,';
+    $variables['settings']['buttons1'] .= 'viewmarkup,editsource,|,';
   }
-  $variables['settings']['buttons1'] .= 'validate,savebutton,saveexitbutton';
+  $variables['settings']['buttons1'] .= 'validate,savebutton';
 
   // Remove the header links if necessary.
   if (isset($variables['config']['readonly']) && isset($variables['header']['header_buttons']) && $variables['config']['readonly'] == TRUE) {
