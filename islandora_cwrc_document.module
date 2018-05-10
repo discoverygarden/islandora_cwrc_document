@@ -57,6 +57,7 @@ function islandora_cwrc_document_menu() {
     'page callback' => 'islandora_cwrc_document_display_cwrc_writer_note',
     'access callback' => 'islandora_object_access',
     'access arguments' => array(ISLANDORA_CWRC_DOCUMENT_EDIT_CWRC, 2),
+    'page arguments' => array(2),
     'file' => 'includes/utilities.inc',
   );
   return $items;
@@ -223,15 +224,26 @@ function islandora_cwrc_document_islandora_required_objects(IslandoraTuque $conn
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->models = ISLANDORA_CWRC_DOCUMENT_TEMPLATE_CONTENT_MODEL;
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', ISLANDORA_CWRC_DOCUMENT_TEMPLATE_COLLECTION_PID);
     // TEMPLATE datastream.
-    $td = $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->constructDatastream('TEMPLATE', 'M');
-    $td->label = "{$stock_template['label']} TEI";
-    $td->mimetype = 'application/xml';
-    $td->setContentFromFile("$module_path/xml/templates/{$stock_template['filename']}", FALSE);
+    if ($stock_template['url'])
+    {
+      $td = $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->constructDatastream('TEMPLATE', 'R');
+      $td->label = "{$stock_template['label']}";
+      $td->mimetype = 'application/xml';
+      $td->url = $stock_template['url'];
+    }
+    else {
+      $td = $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->constructDatastream('TEMPLATE', 'M');
+      $td->label = "{$stock_template['label']}";
+      $td->mimetype = 'application/xml';
+      $td->setContentFromFile("$module_path/xml/templates/{$stock_template['filename']}", FALSE);
+    }
     $objects['islandora_cwrc_document']['objects'][$stock_template['pid']]->ingestDatastream($td);
 
     // Add a reference to the schema.
     $schema = islandora_object_load($stock_template['schema']);
-    islandora_cwrc_writer_set_document_schema($objects['islandora_cwrc_document']['objects'][$stock_template['pid']], $schema);
+    if ($schema) {
+      islandora_cwrc_writer_set_document_schema($objects['islandora_cwrc_document']['objects'][$stock_template['pid']], $schema);
+    }
   }
 
   return $objects;
@@ -336,9 +348,9 @@ function islandora_cwrc_document_preprocess_islandora_cwrc_writer(&$variables) {
   $variables['settings']['buttons1'] = 'schematags,|,addperson,addplace,adddate,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,';
 
   if (isset($variables['config']['initial_mode']) && $variables['config']['initial_mode'] == 'edit') {
-    $variables['settings']['buttons1'] .= 'viewsource,editsource,|,';
+    $variables['settings']['buttons1'] .= 'viewmarkup,editsource,|,';
   }
-  $variables['settings']['buttons1'] .= 'validate,savebutton,saveexitbutton';
+  $variables['settings']['buttons1'] .= 'validate,savebutton';
 
   // Remove the header links if necessary.
   if (isset($variables['config']['readonly']) && isset($variables['header']['header_buttons']) && $variables['config']['readonly'] == TRUE) {

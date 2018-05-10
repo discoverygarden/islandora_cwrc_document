@@ -44,8 +44,19 @@ function islandora_cwrc_document_display_cwrc_writer($form, $form_state, Abstrac
 /**
  * Show the note version of the CWRC-Writer.
  */
-function islandora_cwrc_document_display_cwrc_writer_note() {
-  drupal_goto('cwrc/editor/note.htm');
+function islandora_cwrc_document_display_cwrc_writer_note(AbstractObject $object) {
+    module_load_include('inc', 'islandora_cwrc_writer', 'includes/utilities');
+    return array(
+        '#type' => 'page',
+        '#theme_wrappers' => array('islandora_cwrc_writer_iframe'),
+        'content' => array(
+            '#theme' => 'islandora_cwrc_writer_note',
+            '#documents' => array($object->id),
+            '#schema' => islandora_cwrc_writer_get_document_schema_pid($object),
+            ),
+        );
+    //2016-09-27 - removed drupal_goto to add schemaId to call
+    //drupal_goto('cwrc/editor/note.htm');
 }
 
 /**
@@ -142,66 +153,84 @@ function islandora_cwrc_document_get_stock_templates() {
       'pid' => 'cwrc:biographyTemplate',
       'label' => 'Biography (Template)',
       'filename' => "biography.xml",
+      'url' => "http://cwrc.ca/templates/orlando_biography_template.xml",
       'schema' => "cwrc:biographySchema",
     ),
     array(
       'pid' => 'cwrc:blankTEIDocument',
       'label' => 'Blank TEI Document',
       'filename' => "blank_TEI_document.xml",
+      'url' => "http://cwrc.ca/templates/blank_template-TEI.xml",
       'schema' => "cwrc:teiLiteSchema",
     ),
     array(
+      'pid' => 'cwrc:entryTemplate',
+      'label' => 'CWRC Entry (Template)',
+      'filename' => "cwrc_entry_template.xml",
+      'url' => "http://cwrc.ca/templates/cwrc_entry_template.xml",
+      'schema' => "cwrc:entrySchema",
+    ),
+    array(
       'pid' => 'cwrc:eventTemplate',
-      'label' => 'Event',
+      'label' => 'Event (Template)',
       'filename' => "event.xml",
+      'url' => "http://cwrc.ca/templates/orlando_event_template.xml",
       'schema' => "cwrc:eventsSchema",
     ),
     array(
       'pid' => 'cwrc:letterTemplate',
-      'label' => 'Letter (Template)',
+      'label' => 'Letter (TEI Template)',
       'filename' => "letter.xml",
+      'url' => "http://cwrc.ca/templates/letter_template-TEI.xml",
       'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:poemTemplate',
-      'label' => 'Poem (Template)',
+      'label' => 'Poem (TEI Template)',
       'filename' => "poem.xml",
+      'url' => "http://cwrc.ca/templates/poem_template-TEI.xml",
       'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:proseTemplate',
-      'label' => 'Prose',
+      'label' => 'Prose (TEI Template)',
       'filename' => "prose.xml",
+      'url' => "http://cwrc.ca/templates/prose_template-TEI.xml",
       'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:sampleBiography',
       'label' => 'Biography (Sample)',
       'filename' => 'sample_biography.xml',
+      'url' => "http://cwrc.ca/templates/orlando_biography_sample.xml",
       'schema' => "cwrc:biographySchema",
     ),
     array(
       'pid' => 'cwrc:sampleLetter',
-      'label' => 'Letter (Sample)',
+      'label' => 'Letter (TEI Sample)',
       'filename' => 'sample_letter.xml',
+      'url' => "http://cwrc.ca/templates/sample_letter-TEI.xml",
       'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:samplePoem',
-      'label' => 'Poem (Sample)',
+      'label' => 'Poem (TEI Sample)',
       'filename' => 'sample_poem.xml',
+      'url' => "http://cwrc.ca/templates/sample_poem-TEI.xml",
       'schema' => "cwrc:teiLiteSchema",
     ),
     array(
       'pid' => 'cwrc:sampleWriting',
       'label' => 'Writing (Sample)',
       'filename' => 'sample_writing.xml',
+      'url' => "http://cwrc.ca/templates/orlando_writing_sample.xml",
       'schema' => "cwrc:writingSchema",
     ),
     array(
       'pid' => 'cwrc:writingTemplate',
       'label' => 'Writing (Template)',
       'filename' => 'writing.xml',
+      'url' => "http://cwrc.ca/templates/orlando_writing_template.xml",
       'schema' => "cwrc:writingSchema",
     ),
   );
@@ -216,12 +245,14 @@ function islandora_cwrc_document_get_stock_templates() {
 function islandora_cwrc_document_get_templates() {
   $content_model = ISLANDORA_CWRC_DOCUMENT_TEMPLATE_CONTENT_MODEL;
   $query = <<<EOQ
+PREFIX fedora-model: <info:fedora/fedora-system:def/model#>
+PREFIX fedora-view: <info:fedora/fedora-system:def/view#>
 SELECT ?pid ?label
 FROM <#ri>
 WHERE {
-  ?pid <fedora-model:hasModel> <info:fedora/$content_model> .
-  ?pid <fedora-model:label> ?label .
-  ?ds  <fedora-view:disseminationType> <info:fedora/*/TEMPLATE> .
+  ?pid fedora-model:hasModel <info:fedora/$content_model> .
+  ?pid fedora-model:label ?label .
+  ?ds  fedora-view:disseminationType <info:fedora/*/TEMPLATE> .
   ?pid <info:fedora/fedora-system:def/view#disseminates> ?ds
 }
 EOQ;
